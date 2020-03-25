@@ -12,6 +12,16 @@ Develop with [Lumen](https://lumen.laravel.com) V7.0,
 * SSL for [Telegram Webhook](https://core.telegram.org/bots/webhooks) method
 
 
+## Telegram Bot
+
+### Create Bot
+Create Telegram bot with [@BotFather](https://core.telegram.org/bots#6-botfather)
+
+### Group Privacy
+After creating the Telegram bot, you will need to disable "Group Privacy" in "Bot Settings".
+
+### Add to group
+You need to add Telegram bot to your Telegram group(s) as a Admin with `Delete Message` and `Ban Users` permission.
 
 ## How to install
 
@@ -37,6 +47,7 @@ Setup database connection in `.env` file.
 
 
 ##### Setup Telegram Bot 
+
 ###### Username bot
 
 ```

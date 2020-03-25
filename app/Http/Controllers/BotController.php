@@ -209,7 +209,7 @@ class BotController extends Controller
                 $questionString = $question['question'];
                 if($localizeQuestion)
                     $questionString = localizeString($questionString);
-                $questionString = str_replace(['*'], ["\*"], $questionString);
+                $questionString = escapeMarkdown($questionString);
 
                 $userName  = '['.$fromName.'](tg://user?id='.$fromID.')';
                 $replyText = trans('bot.welcome', ['username' => $userName, 'question' => $questionString]);
@@ -240,7 +240,7 @@ class BotController extends Controller
             $toMessageID = $isReplyID;
             $text        = str_replace('!', '', $text);
             $replyText   = trans('bot.'.$text);
-            $replyText   = str_replace(['_'], ["\_"], $replyText);
+            $replyText   = escapeMarkdown($replyText);
         } else
             return;
 
@@ -368,12 +368,26 @@ class BotController extends Controller
         }
     }
 
+    /**
+     * Delete message
+     *
+     * @param  integer|string  $groupID  Group ID
+     * @param  integer|string  $messageID  Message ID
+     *
+     * @return  boolean
+     */
     private function deleteMessage($groupID, $messageID)
     {
-        return $this->telegram->deleteMessage(array(
-            'chat_id'    => $groupID,
-            'message_id' => $messageID
-        ));
+        try {
+            return $this->telegram->deleteMessage(array(
+                'chat_id'    => $groupID,
+                'message_id' => $messageID
+            ));
+        } catch(Exception $e) {
+            echo $e->getMessage().', '.$e->getFile().', '.$e->getLine().'<br>';
+
+            return false;
+        }
     }
 
     /**

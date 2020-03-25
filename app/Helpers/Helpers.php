@@ -28,3 +28,22 @@ function localizeString($str)
 
     return $str;
 }
+
+function escapeMarkdown($text)
+{
+    $markdown = [
+        '#',
+        '*',
+        '_',
+        // ... rest of markdown entities
+    ];
+
+    $replacements = [
+        '\#',
+        '\*',
+        '\_',
+        // ... rest of corresponding escaped markdown
+    ];
+
+    return str_replace($markdown, $replacements, $text);
+}

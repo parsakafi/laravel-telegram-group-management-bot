@@ -83,7 +83,8 @@ class BotController extends Controller
 
     public function removeMessage()
     {
-        $messages = $this->botUser->getOldMessages(10);
+        $afterTime = intval(env('TELEGRAM_BOT_DELETE_MESSAGE_AFTER', 10));
+        $messages  = $this->botUser->getOldMessages($afterTime);
 
         if(count($messages))
             foreach($messages as $message) {
@@ -188,9 +189,9 @@ class BotController extends Controller
         if(($isNewChatMember || ! $confirmed) && $user->joined_at != null) {
             try {
                 $toMessageID = null;
-                if( ! $isNewChatMember) {
-                    $this->deleteMessage($groupID, $messageID);
+                $this->deleteMessage($groupID, $messageID);
 
+                if( ! $isNewChatMember) {
                     $lockTime = intval(env('TELEGRAM_BOT_TEMP_LOCK_TIME', 5)); // Unit: Minutes
                     if($user->question_at != null && strtotime("-{$lockTime} minutes") < strtotime($user->question_at))
                         return;

@@ -90,6 +90,12 @@ TELEGRAM_BOT_REMOVE_BOTS=true
 TELEGRAM_BOT_TEMP_LOCK_TIME=5
 ```
 
+###### When will the bot message be deleted (Unit: Minutes)
+
+```text
+TELEGRAM_BOT_DELETE_MESSAGE_AFTER=10
+```
+
 ###### Maximum wrong answer number
 
 ```

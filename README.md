@@ -25,7 +25,7 @@ You need to add Telegram bot to your Telegram group(s) as a Admin with `Delete M
 
 ## How to install
 
-#### First clone of repository
+#### Clone the repository first
 ```bash
 git clone https://github.com/parsakafi/laravel-telegram-group-management-bot.git
 ```

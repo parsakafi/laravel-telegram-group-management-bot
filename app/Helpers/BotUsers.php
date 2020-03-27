@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use phpDocumentor\Reflection\Types\Integer;
 
@@ -73,6 +74,15 @@ class BotUsers
                  ->first();
     }
 
+    /**
+     * Check user limited
+     *
+     * @param  integer|string  $userID  User ID
+     * @param  integer|string  $groupID  Group ID
+     * @param  Collection|null  $user  User Collection
+     *
+     * @return boolean
+     */
     public function checkLimit($userID, $groupID, $user = null)
     {
         if($user == null)
@@ -87,7 +97,15 @@ class BotUsers
         return $user->wrong_count >= $maxWrongAnswer || $user->question_count >= $maxQuestion;
     }
 
-    public function getOldMessages($minutes = 10)
+    /**
+     * Get old message ID from DB
+     *
+     * @param  int  $minutes  Get minute for check before that
+     * @param  int  $limit  Limit row
+     *
+     * @return Collection
+     */
+    public function getOldMessages($minutes = 10, $limit = 5)
     {
         return DB::table($this->table)
                  ->where(array(
@@ -96,7 +114,7 @@ class BotUsers
                  ))
                  ->whereNotNull('question_message_id')
                  ->select('group_id', 'user_id', 'question_message_id')
-                 ->limit(5)
+                 ->limit($limit)
                  ->get();
     }
 }

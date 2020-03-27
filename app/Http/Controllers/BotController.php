@@ -33,6 +33,11 @@ class BotController extends Controller
         $this->now      = date('Y-m-d H:i:s');
     }
 
+    /**
+     * Set Webhook
+     *
+     * @return void
+     */
     public function setWebhook()
     {
         if( ! env('APP_DEBUG', false))
@@ -65,22 +70,27 @@ class BotController extends Controller
             return response('Access is forbidden to the requested page.', 403)
                 ->header('Content-Type', 'text/plain');
 
-        $telegram_error  = Cache::get('telegram_error', function() {
+        $telegram_error   = Cache::get('telegram_error', function() {
             return [];
         });
-        $telegram        = Cache::get('telegram_request', function() {
+        $telegram_request = Cache::get('telegram_request', function() {
             return [];
         });
-        $telegram_result = Cache::get('telegram_result', function() {
+        $telegram_result  = Cache::get('telegram_result', function() {
             return [];
         });
 
         echo '<pre>';
         var_dump($telegram_error);
-        var_dump($telegram);
+        var_dump($telegram_request);
         var_dump($telegram_result);
     }
 
+    /**
+     * Set old bot messages
+     *
+     * @return void
+     */
     public function removeMessage()
     {
         $afterTime = intval(env('TELEGRAM_BOT_DELETE_MESSAGE_AFTER', 10));
@@ -93,7 +103,8 @@ class BotController extends Controller
                 $this->botUser->set(array(
                     'group_id'            => $message->group_id,
                     'user_id'             => $message->user_id,
-                    'question_message_id' => null
+                    'question_message_id' => null,
+                    'answer'              => null
                 ));
 
                 echo "group_id: {$message->group_id}, user_id: {$message->user_id}, question_message_id: {$message->question_message_id}<br>";
@@ -118,9 +129,9 @@ class BotController extends Controller
         if(isset($telegramRequest['callback_query'])) {
             $this->dataResponse($telegramRequest);
 
-            return;
+            exit();
         } elseif(isset($telegramRequest['message']['left_chat_member']))
-            return;
+            exit();
 
         $reply_markup = $replyText = null;
 
@@ -129,9 +140,11 @@ class BotController extends Controller
         $removeBots       = env('TELEGRAM_BOT_REMOVE_BOTS', false);
         $localizeQuestion = env('TELEGRAM_BOT_LOCALIZE_QUESTION', false);
 
-        if( ! isset($telegramRequest['message']['chat']['id']) || ! in_array($telegramRequest['message']['chat']['type'],
-                ['group', 'supergroup']))
-            return;
+        if(
+            ! isset($telegramRequest['message']['chat']['id']) ||
+            ! in_array($telegramRequest['message']['chat']['type'], ['group', 'supergroup'])
+        )
+            exit();
 
         $groupID       = $telegramRequest['message']['chat']['id'];
         $isBot         = $telegramRequest['message']['from']['is_bot'];
@@ -145,12 +158,12 @@ class BotController extends Controller
         if( ! in_array($groupID, $allowedGroups)) {
             $this->leaveChat($groupID);
 
-            return;
+            exit();
 
         } elseif($isBot && $removeBots) {
             $this->removeUser($groupID, $fromID);
 
-            return;
+            exit();
         }
 
         $user = $this->botUser->set(array(
@@ -224,17 +237,17 @@ class BotController extends Controller
             } catch(Exception $e) {
                 Cache::put('telegram_error', $e->getMessage().', '.$e->getFile().', '.$e->getLine());
 
-                return;
+                exit();
             }
 
         } elseif($isReplyID && $text && $isCommand) {      // Commands
             $replyFromID = $telegramRequest['message']['reply_to_message']['from']['id'];
             if($fromID === $replyFromID)
-                return;
+                exit();
 
             $isBot = $telegramRequest['message']['reply_to_message']['from']['is_bot'];
             if($isBot)
-                return;
+                exit();
 
             $this->deleteMessage($groupID, $messageID);
 
@@ -243,7 +256,7 @@ class BotController extends Controller
             $replyText   = trans('bot.'.$text);
             $replyText   = escapeMarkdown($replyText);
         } else
-            return;
+            exit();
 
         try {
             $result = $this->telegram->sendMessage([

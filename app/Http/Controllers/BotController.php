@@ -154,6 +154,9 @@ class BotController extends Controller
         $fromLastName  = isset($from['last_name']) ? $from['last_name'] : null;
         $fromUserName  = isset($from['username']) ? $from['username'] : null;
         $fromName      = $fromFirstName.' '.$fromLastName;
+        $fromName      = trim(str_replace(['(',')','[',']'] , '' , $fromName));
+        if(empty($fromName))
+            $fromName = "X";
 
         if( ! in_array($groupID, $allowedGroups)) {
             $this->leaveChat($groupID);

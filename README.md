@@ -157,3 +157,8 @@ The bot sends an equation to new group member. If the user resolves the equation
 Command start with exclamation mark (!), For example `!smart`
 
 If you reply a command to user, The bot get command description from language file and reply to user.
+
+##### 'Let me google that for you' !g Command
+
+For 'Let me google that for you' users can reply to another user with this pattern:
+`!g word`

@@ -40,7 +40,7 @@ class BotController extends Controller
      */
     public function setWebhook()
     {
-        if( ! env('APP_DEBUG', false))
+        if (!env('APP_DEBUG', false))
             return response('Access is forbidden to the requested page.', 403)
                 ->header('Content-Type', 'text/plain');
 
@@ -50,12 +50,12 @@ class BotController extends Controller
                 'url' => $url,
                 //'allowed_updates' => ['message', 'inline_query', 'chosen_inline_result', 'callback_query'] // Dont supported in current version of irazasyed/telegram-bot-sdk 3.0
             ]);
-            if($setWebhook)
+            if ($setWebhook)
                 echo 'Set Webhook Successfully.';
             else
                 echo 'Set Webhook with Error!';
 
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             echo $e->getMessage().', '.$e->getFile().', '.$e->getLine();
         }
     }
@@ -66,17 +66,17 @@ class BotController extends Controller
      */
     public function debug()
     {
-        if( ! env('APP_DEBUG', false))
+        if (!env('APP_DEBUG', false))
             return response('Access is forbidden to the requested page.', 403)
                 ->header('Content-Type', 'text/plain');
 
-        $telegram_error   = Cache::get('telegram_error', function() {
+        $telegram_error   = Cache::get('telegram_error', function () {
             return [];
         });
-        $telegram_request = Cache::get('telegram_request', function() {
+        $telegram_request = Cache::get('telegram_request', function () {
             return [];
         });
-        $telegram_result  = Cache::get('telegram_result', function() {
+        $telegram_result  = Cache::get('telegram_result', function () {
             return [];
         });
 
@@ -96,8 +96,8 @@ class BotController extends Controller
         $afterTime = intval(env('TELEGRAM_BOT_DELETE_MESSAGE_AFTER', 10));
         $messages  = $this->botUser->getOldMessages($afterTime);
 
-        if(count($messages))
-            foreach($messages as $message) {
+        if (count($messages))
+            foreach ($messages as $message) {
                 $this->deleteMessage($message->group_id, $message->question_message_id);
 
                 $this->botUser->set(array(
@@ -126,11 +126,11 @@ class BotController extends Controller
         $telegramRequest = $request->all();
         Cache::put('telegram_request', $telegramRequest);
 
-        if(isset($telegramRequest['callback_query'])) {
+        if (isset($telegramRequest['callback_query'])) {
             $this->dataResponse($telegramRequest);
 
             exit();
-        } elseif(isset($telegramRequest['message']['left_chat_member']))
+        } elseif (isset($telegramRequest['message']['left_chat_member']))
             exit();
 
         $reply_markup = $replyText = null;
@@ -140,9 +140,9 @@ class BotController extends Controller
         $removeBots       = env('TELEGRAM_BOT_REMOVE_BOTS', false);
         $localizeQuestion = env('TELEGRAM_BOT_LOCALIZE_QUESTION', false);
 
-        if(
-            ! isset($telegramRequest['message']['chat']['id']) ||
-            ! in_array($telegramRequest['message']['chat']['type'], ['group', 'supergroup'])
+        if (
+            !isset($telegramRequest['message']['chat']['id']) ||
+            !in_array($telegramRequest['message']['chat']['type'], ['group', 'supergroup'])
         )
             exit();
 
@@ -154,16 +154,16 @@ class BotController extends Controller
         $fromLastName  = isset($from['last_name']) ? $from['last_name'] : null;
         $fromUserName  = isset($from['username']) ? $from['username'] : null;
         $fromName      = $fromFirstName.' '.$fromLastName;
-        $fromName      = trim(str_replace(['(',')','[',']'] , '' , $fromName));
-        if(empty($fromName))
+        $fromName      = trim(str_replace(['(', ')', '[', ']'], '', $fromName));
+        if (empty($fromName))
             $fromName = "X";
 
-        if( ! in_array($groupID, $allowedGroups)) {
+        if (!in_array($groupID, $allowedGroups)) {
             $this->leaveChat($groupID);
 
             exit();
 
-        } elseif($isBot && $removeBots) {
+        } elseif ($isBot && $removeBots) {
             $this->removeUser($groupID, $fromID);
 
             exit();
@@ -180,10 +180,11 @@ class BotController extends Controller
         $confirmed       = intval($user->confirmed);
         $isNewChatMember = isset($telegramRequest['message']['new_chat_member']);
         $text            = isset($telegramRequest['message']['text']) ? trim($telegramRequest['message']['text']) : false;
-        $command         = str_replace('!', '', $text);
+        $command         = $text && substr($text, 0, 1) === '!' ? explode(' ', $text)[0] : false;
+        $command         = $command ? str_replace('!', '', $command) : '';
         $isCommand       = in_array($command, $allowedCommands);
 
-        if($isNewChatMember) {
+        if ($isNewChatMember) {
             $newMember = $telegramRequest['message']['new_chat_member'];
             $user      = $this->botUser->set(array(
                 'group_id'       => $groupID,
@@ -202,21 +203,21 @@ class BotController extends Controller
         $messageID = $toMessageID = $telegramRequest['message']['message_id'];
         $isReplyID = isset($telegramRequest['message']['reply_to_message']) ? $telegramRequest['message']['reply_to_message']['message_id'] : false;
 
-        if(($isNewChatMember || ! $confirmed) && $user->joined_at != null) {
+        if (($isNewChatMember || !$confirmed) && $user->joined_at != null) {
             try {
                 $toMessageID = null;
                 $this->deleteMessage($groupID, $messageID);
 
-                if( ! $isNewChatMember) {
+                if (!$isNewChatMember) {
                     $lockTime = intval(env('TELEGRAM_BOT_TEMP_LOCK_TIME', 5)); // Unit: Minutes
-                    if($user->question_at != null && strtotime("-{$lockTime} minutes") < strtotime($user->question_at))
+                    if ($user->question_at != null && strtotime("-{$lockTime} minutes") < strtotime($user->question_at))
                         return;
                 }
 
-                if($user->question_message_id != null)
+                if ($user->question_message_id != null)
                     $this->deleteMessage($groupID, $messageID);
 
-                if($user->question_message_id == null && $this->botUser->checkLimit($fromID, $groupID, $user)) {
+                if ($user->question_message_id == null && $this->botUser->checkLimit($fromID, $groupID, $user)) {
                     $this->removeUser($groupID, $fromID);
 
                     return;
@@ -224,7 +225,7 @@ class BotController extends Controller
 
                 $question       = Question::create();
                 $questionString = $question['question'];
-                if($localizeQuestion)
+                if ($localizeQuestion)
                     $questionString = localizeString($questionString);
                 $questionString = escapeMarkdown($questionString);
 
@@ -237,27 +238,27 @@ class BotController extends Controller
 
                 $reply_markup = $this->telegramKeyboard($keyboard, 'inline_keyboard');
 
-            } catch(Exception $e) {
+            } catch (Exception $e) {
                 Cache::put('telegram_error', $e->getMessage().', '.$e->getFile().', '.$e->getLine());
 
                 exit();
             }
 
-        } elseif($isReplyID && $text && $isCommand) {      // Commands
+        } elseif ($isReplyID && $text && $isCommand) {      // Commands
             $replyFromID = $telegramRequest['message']['reply_to_message']['from']['id'];
-            if($fromID === $replyFromID)
+            if ($fromID === $replyFromID)
                 exit();
 
             $isBot = $telegramRequest['message']['reply_to_message']['from']['is_bot'];
-            if($isBot)
+            if ($isBot)
                 exit();
 
             $this->deleteMessage($groupID, $messageID);
 
             $toMessageID = $isReplyID;
-            $text        = str_replace('!', '', $text);
-            $replyText   = trans('bot.'.$text);
-            $replyText   = escapeMarkdown($replyText);
+            $replyText   = $this->getCommandText($command, $text);
+
+            if (!$replyText) exit();
         } else
             exit();
 
@@ -271,8 +272,8 @@ class BotController extends Controller
                 'parse_mode'               => 'Markdown'
             ])->getRawResponse();
 
-            if($isNewChatMember || ! $confirmed) {
-                $updateUserDate = array(
+            if ($isNewChatMember || !$confirmed) {
+                $updateUserData = array(
                     'user_id'             => $fromID,
                     'group_id'            => $groupID,
                     'question_message_id' => $result['message_id'],
@@ -281,18 +282,42 @@ class BotController extends Controller
                     'answer'              => $question['answer']
                 );
 
-                if($isNewChatMember) {
-                    $updateUserDate['joined_at'] = $this->now;
+                if ($isNewChatMember) {
+                    $updateUserData['joined_at'] = $this->now;
                 }
 
-                $this->botUser->set($updateUserDate);
+                $this->botUser->set($updateUserData);
             }
 
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             $result = $e->getMessage();
         }
 
         Cache::put('telegram_result', $result);
+    }
+
+    private function getCommandText($command, $text)
+    {
+        $replace = [];
+
+        if ($command === 'g') {
+            $word = explode(' ', $text);
+            unset($word[0]);
+            $word = trim(implode(' ', $word));
+
+            if (empty($word))
+                return false;
+
+            $replace = [
+                'word'       => $word,
+                'encodeword' => urlencode($word)
+            ];
+        }
+
+        $replyText = trans('bot.'.$command, $replace);
+        $replyText = escapeMarkdown($replyText);
+
+        return $replyText;
     }
 
     /**
@@ -314,7 +339,7 @@ class BotController extends Controller
 
             list($type, $groupID2, $userID, $answer) = explode('_', $data);
 
-            if($fromID != $userID) {
+            if ($fromID != $userID) {
                 $this->telegram->answerCallbackQuery([
                     'callback_query_id' => $callbackQueryID,
                     'text'              => trans('bot.not_answer_permission'),
@@ -324,13 +349,13 @@ class BotController extends Controller
                 return;
             }
 
-            if($type == 'answer') {
+            if ($type == 'answer') {
                 $user = $this->botUser->getUser($userID, $groupID);
 
-                if( ! $user)
+                if (!$user)
                     return;
 
-                $updateUserDate = array(
+                $updateUserData = array(
                     'group_id'            => $groupID,
                     'user_id'             => $fromID,
                     'question_message_id' => null,
@@ -339,9 +364,9 @@ class BotController extends Controller
 
                 $correctAnswer = $user->answer == $answer;
 
-                if($correctAnswer) {
-                    $updateUserDate = array_merge(
-                        $updateUserDate, ['confirmed' => true, 'confirmed_at' => $this->now]
+                if ($correctAnswer) {
+                    $updateUserData = array_merge(
+                        $updateUserData, ['confirmed' => true, 'confirmed_at' => $this->now]
                     );
 
                     $message = trans('bot.correct_answer');
@@ -351,19 +376,19 @@ class BotController extends Controller
                     $maxWrongAnswer   = intval(env('TELEGRAM_BOT_MAX_WRONG_ANSWER', 3));
                     $attempts         = $maxWrongAnswer - $updateWrongCount;
 
-                    $updateUserDate = array_merge(
-                        $updateUserDate, ['wrong_count' => $updateWrongCount]
+                    $updateUserData = array_merge(
+                        $updateUserData, ['wrong_count' => $updateWrongCount]
                     );
 
                     $message = trans('bot.wrong_answer', ['attempts' => $attempts]);
                 }
 
-                $user = $this->botUser->set($updateUserDate);
+                $user = $this->botUser->set($updateUserData);
 
-                if( ! $correctAnswer) {
+                if (!$correctAnswer) {
                     $allowRemoveUser = $user->answer != $answer && $this->botUser->checkLimit($fromID, $groupID, $user);
 
-                    if($allowRemoveUser)
+                    if ($allowRemoveUser)
                         $message = trans('bot.wrong_answer_and_banned');
                 }
 
@@ -374,13 +399,13 @@ class BotController extends Controller
 
                 $this->deleteMessage($groupID, $messageID);
 
-                if( ! $correctAnswer && $allowRemoveUser) {
+                if (!$correctAnswer && $allowRemoveUser) {
                     sleep(5);
                     $this->removeUser($groupID, $fromID);
                 }
             }
 
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             Cache::put('telegram_error', $e->getMessage().', '.$e->getFile().', '.$e->getLine());
         }
     }
@@ -400,7 +425,7 @@ class BotController extends Controller
                 'chat_id'    => $groupID,
                 'message_id' => $messageID
             ));
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             echo $e->getMessage().', '.$e->getFile().', '.$e->getLine().'<br>';
 
             return false;
@@ -436,7 +461,7 @@ class BotController extends Controller
             'user_id' => $userID
         ]);
 
-        if($removed)
+        if ($removed)
             $this->botUser->set(array(
                 'user_id'    => $userID,
                 'group_id'   => $groupID,
@@ -462,7 +487,7 @@ class BotController extends Controller
         $keyboard         = array(array());
         shuffle($answers);
 
-        foreach($answers as $answer) {
+        foreach ($answers as $answer) {
             $keyboard[0][] = array(
                 'text'          => $localizeQuestion ? localizeString($answer) : $answer,
                 'callback_data' => 'answer_'.$groupID.'_'.$userID.'_'.$answer
@@ -482,11 +507,11 @@ class BotController extends Controller
      */
     private function telegramKeyboard($keys, $type = 'keyboard')
     {
-        if( ! is_array($keys))
+        if (!is_array($keys))
             return null;
         $keyboard = $keys;
         $reply    = array($type => $keyboard);
-        if($type == 'keyboard')
+        if ($type == 'keyboard')
             $reply['resize_keyboard'] = true;
 
         return json_encode($reply, true);

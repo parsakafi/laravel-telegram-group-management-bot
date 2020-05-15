@@ -13,4 +13,5 @@ return [
     'correct_answer'          => 'Correct answer, Welcome.',
     'wrong_answer'            => 'Wrong answer, Number of attempts left: :attempts',
     'wrong_answer_and_banned' => 'The answer is wrong and you will be removed from the group.',
+    'g'                       => 'Let me google that for you'."\n".'[:word](https://lmgtfy.com/?q=:encodeword)'
 ];

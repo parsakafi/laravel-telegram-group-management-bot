@@ -267,7 +267,7 @@ class BotController extends Controller
                 'reply_to_message_id'      => $toMessageID,
                 'text'                     => $replyText,
                 'reply_markup'             => $reply_markup,
-                'disable_web_page_preview' => true,
+                'disable_web_page_preview' => false,
                 'parse_mode'               => 'Markdown'
             ])->getRawResponse();
 

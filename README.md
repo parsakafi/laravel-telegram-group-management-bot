@@ -158,7 +158,7 @@ Command start with exclamation mark (!), For example `!smart`
 
 If you reply a command to user, The bot get command description from language file and reply to user.
 
-##### 'Let me google that for you' !g Command
+#### 'Let me google that for you' !g Command
 
-For 'Let me google that for you' users can reply to another user with this pattern:
+For 'Let me google that for you', users can reply to another user with this pattern:
 `!g word`

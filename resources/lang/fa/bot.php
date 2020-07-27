@@ -13,6 +13,7 @@ return [
     'wrong_answer_and_banned' => 'پاسخ اشتباه است و از گروه حذف خواهید شد.',
     'smart'                   => 'لطفا سوال را واضح و کامل بیان کنید'.
         "\n https://wiki.ubuntu.ir/wiki/Smart_Questions",
+	'ask'                     => 'لطفا بجای اینکه بپرسید که بعد سوال اصلی خود را بپرسید، مستقیما سوال اصلی خود را بپرسید :)',
     'rule'                    => '[قوانین](https://bit.ly/35tIUlx) گروه وردپرس فارسی',
     'g'                       => 'بذار من برات گوگل کنم'."\n".'[:word](https://bmbgk.ir/?q=:encodeword)'
 ];
